@@ -17,6 +17,7 @@
         target (or target default-target)
         class-dir (or class-dir (default-class-dir target))
         jar-file  (or jar-file (default-jar-file target lib version))]
+    (printf "Install jar file(%s) to local maven repository(~/.m2) with version(%s \"%s\")%n" jar-file lib version)
     (-> opts
         (assoc :lib lib
                :version version
