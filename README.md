@@ -1,4 +1,5 @@
 # simple-build
+[![Clojars Project](https://img.shields.io/clojars/v/org.clojars.wang/simple-build.svg)](https://clojars.org/org.clojars.wang/simple-build)
 
 A Clojure library with some built utilities for [tools.build](https://github.com/clojure/tools.build), inspired by [build-clj](https://github.com/seancorfield/build-clj)
 
