@@ -2,7 +2,8 @@
   (:require [clojure.tools.build.api :as b]
             [org.corfield.build :as bb]
             [deps-deploy.deps-deploy :as dd]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [simple.build :as sb]))
 
 (def lib 'org.clojars.wang/simple-build)
 ;; if you want a version of MAJOR.MINOR.COMMITS:

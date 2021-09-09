@@ -1,5 +1,7 @@
 (ns simple.build
-  "Some build utilities")
+  "Some build utilities"
+  (:require [clojure.tools.build.api :as b]
+            [deps-deploy.deps-deploy :as dd]))
 
 (def ^:private default-target "target")
 (def ^:private default-basis (b/create-basis {:project "deps.edn"}))
@@ -9,8 +11,10 @@
 
 (defn install
   "Install jar file to local maven repository ~/.m2, Depend on existing built jar file."
-  [{:keys [target class-dir jar-file] :as opts}]
-  (let [target (or target default-target)
+  [{:keys [lib version basis target class-dir jar-file] :as opts}]
+  (assert (and lib version) "lib and version are required for install")
+  (let [basis (or basis (default-basis))
+        target (or target default-target)
         class-dir (or class-dir (default-class-dir target))
         jar-file  (or jar-file (default-jar-file target lib version))]
     (-> opts
