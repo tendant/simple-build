@@ -10,6 +10,34 @@
 (defn- default-jar-file [target lib version]
   (format "%s/%s-%s.jar" target (name lib) version))
 
+(defn jar
+  "Build the library JAR file.
+  Requires: lib, version"
+  [{:keys [target class-dir lib version basis scm src-dirs tag jar-file] :as opts}]
+  (assert (and lib version) "lib and version are required for jar")
+  (let [target    (or target default-target)
+        class-dir (or class-dir (default-class-dir target))
+        basis     (or basis default-basis)
+        src-dirs  (or src-dirs ["src"])
+        tag       (or tag (str "v" version))
+        jar-file  (or jar-file (default-jar-file target lib version))]
+    (println "\nWriting pom.xml...")
+    (println "deps:" (:deps basis))
+    (b/write-pom {:class-dir class-dir
+                  :lib       lib
+                  :version   version
+                  :scm       (cond-> (or scm {})
+                               tag (assoc :tag tag))
+                  :basis     basis
+                  :src-dirs  src-dirs})
+    (println "Copying src...")
+    (b/copy-dir {:src-dirs   src-dirs
+                 :target-dir class-dir})
+    (println (str "Building jar " jar-file "..."))
+    (b/jar {:class-dir class-dir
+            :jar-file  jar-file}))
+  opts)
+
 (defn install
   "Install jar file to local maven repository ~/.m2, Depend on existing built jar file."
   [{:keys [lib version basis target class-dir jar-file] :as opts}]

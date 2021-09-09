@@ -8,6 +8,8 @@
 ;; if you want a version of MAJOR.MINOR.COMMITS:
 (def version (format "0.0.%s" (b/git-count-revs nil)))
 
+(def ^:private default-basis (b/create-basis {:project "deps.edn"}))
+
 (defn jar
   [opts]
   (-> opts
@@ -26,3 +28,11 @@
   (-> opts
       (assoc :lib lib :version version)
       (sb/release)))
+
+(defn debug
+  [opts]
+  (-> opts
+      (assoc :lib lib :version version)
+      (sb/jar))
+  ;; (clojure.pprint/pprint default-basis)
+  )
