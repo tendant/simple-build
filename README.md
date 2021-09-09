@@ -11,6 +11,13 @@ org.clojars.wang/simple-build {:mvn/version "0.0.18"}
 
 1. Add alias to deps.clj file
 ```clj
+  :build {:deps {io.github.tendant/simple-build {:git/tag "0.0.18" :git/sha "c736848"}}
+          :ns-default build}
+```
+
+OR
+
+```clj
   :build {:deps {org.clojars.wang/simple-build {:mvn/version "0.0.18"}
                  io.github.clojure/tools.build {:git/tag "v0.2.2" :git/sha "3049217"}
                  io.github.slipset/deps-deploy {:sha "b4359c5d67ca002d9ed0c4b41b710d7e5a82e3bf"}
