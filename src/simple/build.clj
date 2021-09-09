@@ -146,13 +146,14 @@
     :dir - dir to invoke this command from, by default current directory
     :path - path to count commits for relative to dir"
   [{:keys [dir path version] :or {dir "."} :as opts}]
-  (println "git tag version:" version)
-  (-> {:command-args (cond-> ["git" "tag" version]
-                       path (conj "--" path))
-       :dir (.getPath (b/resolve-path dir))
-       :out :capture}
-      b/process
-      :out)
+  (let [tag (str "v" version)]
+    (printf "git tag version(%s) with tag(%s)." version tag)
+    (-> {:command-args (cond-> ["git" "tag" tag]
+                         path (conj "--" path))
+         :dir (.getPath (b/resolve-path dir))
+         :out :capture}
+        b/process
+        :out))
   opts)
 
 (defn- local-changes?
