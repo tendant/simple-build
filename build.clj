@@ -29,10 +29,9 @@
       (assoc :lib lib :version version)
       (sb/release)))
 
-(defn debug
+(defn uberjar
   [opts]
   (-> opts
       (assoc :lib lib :version version)
-      (sb/jar))
-  ;; (clojure.pprint/pprint default-basis)
-  )
+      (bb/clean)
+      (sb/uberjar)))

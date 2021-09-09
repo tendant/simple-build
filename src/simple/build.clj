@@ -5,10 +5,17 @@
             [deps-deploy.deps-deploy :as dd]))
 
 (def ^:private default-target "target")
+
 (def ^:private default-basis (b/create-basis {:project "deps.edn"}))
-(defn- default-class-dir [target] (str target "/classes"))
+
+(defn- default-class-dir [target]
+  (str target "/classes"))
+
 (defn- default-jar-file [target lib version]
   (format "%s/%s-%s.jar" target (name lib) version))
+
+(defn- default-uber-file [target lib version]
+  (format "%s/%s-%s-standalone.jar" target (name lib) version))
 
 (defn jar
   "Build the library JAR file.
@@ -37,6 +44,67 @@
     (b/jar {:class-dir class-dir
             :jar-file  jar-file}))
   opts)
+
+(defn javac
+  [{:keys [src-dirs class-dir basis] :as opts}]
+  (let [src-dirs (or src-dirs ["java"])
+        class-dir (or class-dir default-class-dir)
+        basis (or basis default-basis)]
+    (println "Compiling java...")
+    (b/javac {:src-dirs src-dirs
+              :class-dir class-dir
+	      :basis basis
+	      :javac-opts ["-source" "8" "-target" "8"]}))
+  opts)
+
+(defn uber
+  "Build the library Uber JAR file. Requires: lib, version"
+  [{:keys [target class-dir lib version basis scm src-dirs tag uber-file] :as opts}]
+  (assert (and lib version) "lib and version are required for uber")
+  (let [target    (or target default-target)
+        class-dir (or class-dir (default-class-dir target))
+        basis     (or basis default-basis)
+        src-dirs  (or src-dirs ["src"])
+        tag       (or tag (str "v" version))
+        uber-file  (or uber-file (default-uber-file target lib version))]
+    (println "Copying src...")
+    (b/copy-dir {:src-dirs   src-dirs
+                 :target-dir class-dir})
+    (println (str "Building uberjar " uber-file "..."))
+    (b/uber {:class-dir class-dir
+             :uber-file uber-file
+             :basis basis}))
+  opts)
+
+(defn compile-clj
+  [{:keys [target class-dir basis src-dirs] :as opts}]
+  (let [target (or target (default-target))
+        class-dir (or class-dir (default-class-dir target))
+        basis (or basis (default-basis))
+        src-dirs (or src-dirs ["src"])])
+  (println "Compiling clj...")
+  (b/compile-clj {:basis basis
+                  :src-dirs src-dirs
+                  :class-dir class-dir})
+  opts)
+
+(defn uberjar
+  [{:keys [lib version basis target class-dir uber-file] :as opts}]
+  (assert (and lib version) "lib and version are required for install")
+  (let [basis (or basis default-basis)
+        target (or target default-target)
+        class-dir (or class-dir (default-class-dir target))
+        uber-file  (or uber-file (default-uber-file target lib version))]
+    (-> opts
+        (assoc :lib lib
+               :version version
+               :basis basis
+               :target target
+               :class-dir class-dir
+               :uber-file uber-file)
+        (compile-clj)
+        (uber))
+    opts))
 
 (defn install
   "Install jar file to local maven repository ~/.m2, Depend on existing built jar file."

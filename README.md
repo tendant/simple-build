@@ -45,6 +45,13 @@ OR
       (bb/clean)
       (bb/jar)))
 
+(defn uberjar
+  [opts]
+  (-> opts
+      (assoc :lib lib :version version)
+      (bb/clean)
+      (sb/uberjar)))
+
 (defn install
   [opts]
   (-> opts
