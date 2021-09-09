@@ -22,7 +22,7 @@ org.clojars.wang/simple-build {:mvn/version "0.0.0"}
             [org.corfield.build :as bb]
             [simple.build :as sb]))
 
-(def lib 'myname/mylib)
+(def lib '<group-id>/<artifact-id>)
 
 ;; if you want a version of MAJOR.MINOR.COMMITS:
 (def version (format "1.0.%s" (b/git-count-revs nil)))
@@ -48,16 +48,29 @@ org.clojars.wang/simple-build {:mvn/version "0.0.0"}
       (sb/update-deps-version)))
 ```
 
+3. Install project to local maven repository
+
+```shell
+clj -T:build install
+```
+
+4. Release clojure project to clojars
+
+``shell
+clj -T:build deploy
+```
+
 ## Development
 
 1. Install to local ~/.m2 maven repository
-
+```clj
     clj -T:build install
+```
     
 2. Deploy to clojars
-
+```clj
     clj -T:build deploy
-
+```
 ## License
 
 Copyright © 2021 Lei
