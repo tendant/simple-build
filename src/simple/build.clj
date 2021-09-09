@@ -26,6 +26,8 @@
                :target target
                :class-dir class-dir
                :jar-file jar-file)
+        (bb/clean)
+        (bb/jar)
         (b/install))
     opts))
 
