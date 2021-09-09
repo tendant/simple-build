@@ -23,6 +23,12 @@
       (assoc :lib lib :version version)
       (sb/install)))
 
+(defn tag
+  [opts]
+  (-> opts
+      (assoc :lib lib :version version)
+      (sb/tag)))
+
 (defn release
   [opts]
   (-> opts

@@ -17,6 +17,23 @@
 (defn- default-uber-file [target lib version]
   (format "%s/%s-%s-standalone.jar" target (name lib) version))
 
+(defn- local-changes?
+  [{:keys [dir path] :or {dir "."} :as opts}]
+  (-> {:command-args (cond-> ["git" "status" "--porcelain"]
+                       path (conj "--" path))
+       :dir (.getPath (b/resolve-path dir))
+       :out :capture}
+      b/process
+      :out))
+
+(defn no-local-change
+  [opts]
+  (let [changes (local-changes? opts)]
+    (if (empty? changes)
+      opts
+      (throw (ex-info (format "Local change detected, please commit your local change first!%n%s" changes)
+                      {:changes changes})))))
+
 (defn jar
   "Build the library JAR file.
   Requires: lib, version"
@@ -156,22 +173,11 @@
         :out))
   opts)
 
-(defn- local-changes?
-  [{:keys [dir path] :or {dir "."} :as opts}]
-  (-> {:command-args (cond-> ["git" "status" "--porcelain"]
-                       path (conj "--" path))
-       :dir (.getPath (b/resolve-path dir))
-       :out :capture}
-      b/process
-      :out))
-
-(defn no-local-change
-  [opts]
-  (let [changes (local-changes? opts)]
-    (if (empty? changes)
-      opts
-      (throw (ex-info (format "Local change detected, please commit your local change first!%n%s" changes)
-                      {:changes changes})))))
+(defn tag
+  [{:keys [dir path version] :as opts}]
+  (-> opts
+      (no-local-change)
+      (git-tag-version)))
 
 (defn update-lein-version
   [{:keys [dir file lib version] :or {dir "." file "README.md"} :as opts}]
