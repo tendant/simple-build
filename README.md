@@ -27,6 +27,13 @@ org.clojars.wang/simple-build {:mvn/version "0.0.0"}
 ;; if you want a version of MAJOR.MINOR.COMMITS:
 (def version (format "1.0.%s" (b/git-count-revs nil)))
 
+(defn jar
+  [opts]
+  (-> opts
+      (assoc :lib lib :version version)
+      (bb/clean)
+      (bb/jar)))
+
 (defn install
   [opts]
   (-> opts
