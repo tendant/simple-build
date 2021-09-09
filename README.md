@@ -3,14 +3,14 @@
 A Clojure library with some built utilities for [tools.build](https://github.com/clojure/tools.build), inspired by [build-clj](https://github.com/seancorfield/build-clj)
 
 ```clj
-org.clojars.wang/simple-build {:mvn/version "0.0.12"}
+org.clojars.wang/simple-build {:mvn/version "0.0.15"}
 ```
 
 ## Usage
 
 1. Add alias to deps.clj file
 ```clj
-  :build {:deps {org.clojars.wang/simple-build {:mvn/version "0.0.12"}}
+  :build {:deps {org.clojars.wang/simple-build {:mvn/version "0.0.15"}}
           :ns-default build}
 ```
 
