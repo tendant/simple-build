@@ -1,6 +1,7 @@
 (ns simple.build
   "Some build utilities"
   (:require [clojure.tools.build.api :as b]
+            [org.corfield.build :as bb]
             [deps-deploy.deps-deploy :as dd]))
 
 (def ^:private default-target "target")
@@ -99,3 +100,14 @@
         b/process
         :out)
     opts))
+
+(defn release
+  [opts]
+  (-> opts
+      (no-local-change)
+      (bb/clean)
+      (bb/jar)
+      (clojars)
+      (git-tag-version)
+      (update-lein-version)
+      (update-deps-version)))

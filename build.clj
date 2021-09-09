@@ -21,14 +21,8 @@
       (assoc :lib lib :version version)
       (sb/install)))
 
-(defn deploy
+(defn release
   [opts]
   (-> opts
       (assoc :lib lib :version version)
-      (sb/no-local-change)
-      (sb/git-tag-version)
-      (bb/clean)
-      (bb/jar)
-      (sb/clojars)
-      (sb/update-lein-version)
-      (sb/update-deps-version)))
+      (sb/release)))
