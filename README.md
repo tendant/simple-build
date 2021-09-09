@@ -56,7 +56,7 @@ clj -T:build install
 
 4. Release clojure project to clojars
 
-``shell
+```shell
 clj -T:build deploy
 ```
 
