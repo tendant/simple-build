@@ -38,21 +38,19 @@ org.clojars.wang/simple-build {:mvn/version "0.0.12"}
   [opts]
   (-> opts
       (assoc :lib lib :version version)
-      (bb/clean)
-      (sb/jar)
       (sb/install)))
       
-(defn deploy
+(defn release
   [opts]
   (-> opts
       (assoc :lib lib :version version)
-      (sb/no-local-change)
-      (sb/git-tag-version)
-      (bb/clean)
-      (sb/jar)
-      (sb/clojars)
-      (sb/update-lein-version)
-      (sb/update-deps-version)))
+      (sb/release)))
+```
+
+3. Build jar file
+
+```shell
+clj -T:build jar
 ```
 
 3. Install project to local maven repository
@@ -64,7 +62,7 @@ clj -T:build install
 4. Release clojure project to clojars
 
 ```shell
-clj -T:build deploy
+clj -T:build release
 ```
 
 ## Development
@@ -76,7 +74,7 @@ clj -T:build deploy
     
 2. Deploy to clojars
 ```clj
-    clj -T:build deploy
+    clj -T:build release
 ```
 ## License
 
