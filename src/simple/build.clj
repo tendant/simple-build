@@ -183,7 +183,6 @@
 (defn update-lein-version
   [{:keys [dir file lib version] :or {dir "." file "README.md"} :as opts}]
   (let [lib-name (clojure.string/replace (str lib) "/" "\\/")
-        _ (println "lib-name:" lib-name)
         replace (format "s/\\(%s\\) \".*\"/\\1 \"%s\"/g" lib-name version)]
     (printf "Update version number to %s in file %s%n" version file)
     (-> {:command-args ["sed" "-i" "" replace file]
@@ -196,7 +195,6 @@
 (defn update-deps-version
   [{:keys [dir file lib version] :or {dir "." file "README.md"} :as opts}]
   (let [lib-name (clojure.string/replace (str lib) "/" "\\/")
-        _ (println "lib-name:" lib-name)
         replace (format "s/\\(%s\\) {:mvn\\/version \".*\"}/\\1 {:mvn\\/version \"%s\"}/g" lib-name version)]
     (printf "Update version number to %s in file %s%n" version file)
     (-> {:command-args ["sed" "-i" "" replace file]
