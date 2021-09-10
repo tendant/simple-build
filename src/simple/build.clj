@@ -63,9 +63,10 @@
   opts)
 
 (defn javac
-  [{:keys [src-dirs class-dir basis] :as opts}]
-  (let [src-dirs (or src-dirs ["java"])
-        class-dir (or class-dir default-class-dir)
+  [{:keys [src-dirs class-dir basis target] :as opts}]
+  (let [target (or target default-target)
+        src-dirs (or src-dirs ["java"])
+        class-dir (or class-dir (default-class-dir target))
         basis (or basis default-basis)]
     (println "Compiling java...")
     (b/javac {:src-dirs src-dirs
