@@ -10,34 +10,36 @@
 
 (def ^:private default-basis (b/create-basis {:project "deps.edn"}))
 
+(def scm {:url "https://github.com/tendant/simple-build"})
+
 (defn jar
   [opts]
   (-> opts
-      (assoc :lib lib :version version)
+      (assoc :lib lib :version version :scm scm)
       (bb/clean)
       (bb/jar)))
 
 (defn install
   [opts]
   (-> opts
-      (assoc :lib lib :version version)
+      (assoc :lib lib :version version :scm scm)
       (sb/install)))
 
 (defn tag
   [opts]
   (-> opts
-      (assoc :lib lib :version version)
+      (assoc :lib lib :version version :scm scm)
       (sb/tag)))
 
 (defn release
   [opts]
   (-> opts
-      (assoc :lib lib :version version)
+      (assoc :lib lib :version version :scm scm)
       (sb/release)))
 
 (defn uberjar
   [opts]
   (-> opts
-      (assoc :lib lib :version version)
+      (assoc :lib lib :version version :scm scm)
       (bb/clean)
       (sb/uberjar)))

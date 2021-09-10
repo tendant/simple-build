@@ -4,7 +4,7 @@
 A Clojure library with some built utilities for [tools.build](https://github.com/clojure/tools.build), inspired by [build-clj](https://github.com/seancorfield/build-clj)
 
 ```clj
-org.clojars.wang/simple-build {:mvn/version "0.0.18"}
+org.clojars.wang/simple-build {:mvn/version "0.0.28"}
 ```
 
 ## Usage
@@ -28,30 +28,32 @@ org.clojars.wang/simple-build {:mvn/version "0.0.18"}
 ;; if you want a version of MAJOR.MINOR.COMMITS:
 (def version (format "1.0.%s" (b/git-count-revs nil)))
 
+(def scm {:url "<your-git-repository-url>"})
+
 (defn jar
   [opts]
   (-> opts
-      (assoc :lib lib :version version)
+      (assoc :lib lib :version version :scm scm)
       (bb/clean)
       (bb/jar)))
 
 (defn uberjar
   [opts]
   (-> opts
-      (assoc :lib lib :version version)
+      (assoc :lib lib :version version :scm scm)
       (bb/clean)
       (sb/uberjar)))
 
 (defn install
   [opts]
   (-> opts
-      (assoc :lib lib :version version)
+      (assoc :lib lib :version version :scm scm)
       (sb/install)))
       
 (defn release
   [opts]
   (-> opts
-      (assoc :lib lib :version version)
+      (assoc :lib lib :version version :scm scm)
       (sb/release)))
 ```
 
