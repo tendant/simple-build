@@ -198,7 +198,6 @@
   (let [lib-name (clojure.string/replace (str lib) "/" "\\/")
         _ (println "lib-name:" lib-name)
         replace (format "s/\\(%s\\) {:mvn\\/version \".*\"}/\\1 {:mvn\\/version \"%s\"}/g" lib-name version)]
-    (println "replace:" replace)
     (printf "Update version number to %s in file %s%n" version file)
     (-> {:command-args ["sed" "-i" "" replace file]
          :dir (.getPath (b/resolve-path dir))
