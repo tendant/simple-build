@@ -4,7 +4,7 @@
 A Clojure library with some built utilities for [tools.build](https://github.com/clojure/tools.build), inspired by [build-clj](https://github.com/seancorfield/build-clj)
 
 ```clj
-org.clojars.wang/simple-build {:mvn/version "0.0.28"}
+org.clojars.wang/simple-build {:mvn/version "0.0.33"}
 ```
 
 ## Usage
