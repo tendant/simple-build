@@ -28,10 +28,12 @@
   (:version opts (format "1.0.%s" (b/git-count-revs nil))))
 
 (defn default-jar-file [opts]
-  (format "%s/%s-%s.jar" (default-target opts) (default-name opts) (default-version opts)))
+  (:jar-file opts
+             (format "%s/%s-%s.jar" (default-target opts) (default-name opts) (default-version opts))))
 
 (defn default-uber-file [opts]
-  (format "%s/%s-%s-standalone.jar" (default-target opts) (default-name opts) (default-version opts)))
+  (:uber-file opts
+              (format "%s/%s-%s-standalone.jar" (default-target opts) (default-name opts) (default-version opts))))
 
 (defn default-opts
   [opts]
