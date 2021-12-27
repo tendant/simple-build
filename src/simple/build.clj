@@ -96,6 +96,7 @@
 (defn uberjar
   [{:keys [lib version basis target src-dirs class-dir uber-file] :as opts}]
   (assert (and lib version) "lib and version are required for install")
+  (bb/clean opts)
   (println "Copying src...")
   (b/copy-dir {:src-dirs   src-dirs
                :target-dir class-dir})
