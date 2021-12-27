@@ -4,18 +4,46 @@
             [org.corfield.build :as bb]
             [deps-deploy.deps-deploy :as dd]))
 
-(def ^:private default-target "target")
+(defn default-target
+  [opts]
+  (:target opts "target"))
 
-(def ^:private default-basis (b/create-basis {:project "deps.edn"}))
+(defn default-basis
+  [opts]
+  (b/create-basis {:project "deps.edn"}))
 
-(defn- default-class-dir [target]
-  (str target "/classes"))
+(defn default-class-dir
+  [opts]
+  (if (empty? (default-target opts))
+    "classes"
+    (str (default-target opts) "/classes")))
 
-(defn- default-jar-file [target lib version]
-  (format "%s/%s-%s.jar" target (name lib) version))
+(defn default-name
+  [opts]
+  (assert (:lib opts) "lib is required!")
+  (name (:lib opts)))
 
-(defn- default-uber-file [target lib version]
-  (format "%s/%s-%s-standalone.jar" target (name lib) version))
+(defn default-version
+  [opts]
+  (:version opts (format "1.0.%s" (b/git-count-revs nil))))
+
+(defn default-jar-file [opts]
+  (format "%s/%s-%s.jar" (default-target opts) (default-name opts) (default-version opts)))
+
+(defn default-uber-file [opts]
+  (format "%s/%s-%s-standalone.jar" (default-target opts) (default-name opts) (default-version opts)))
+
+(defn default-opts
+  [opts]
+  {:lib (:lib opts)
+   :version (default-version opts)
+   :target (default-target opts)
+   :basis (default-basis opts)
+   :src-dirs (:src-dirs opts ["src"])
+   :tag (:tag opts (str "v" (default-version opts)))
+   :class-dir (default-class-dir opts)
+   :jar-file (default-jar-file opts)
+   :uber-file (default-uber-file opts)})
 
 (defn- local-changes?
   [{:keys [dir path] :or {dir "."} :as opts}]
@@ -39,123 +67,57 @@
   Requires: lib, version"
   [{:keys [target class-dir lib version basis scm src-dirs tag jar-file] :as opts}]
   (assert (and lib version) "lib and version are required for jar")
-  (let [target    (or target default-target)
-        class-dir (or class-dir (default-class-dir target))
-        basis     (or basis default-basis)
-        src-dirs  (or src-dirs ["src"])
-        tag       (or tag (str "v" version))
-        jar-file  (or jar-file (default-jar-file target lib version))]
-    (println "\nWriting pom.xml...")
-    (println "deps:" (:deps basis))
-    (b/write-pom {:class-dir class-dir
-                  :lib       lib
-                  :version   version
-                  :scm       (cond-> (or scm {})
-                               tag (assoc :tag tag))
-                  :basis     basis
-                  :src-dirs  src-dirs})
-    (println "Copying src...")
-    (b/copy-dir {:src-dirs   src-dirs
-                 :target-dir class-dir})
-    (println (str "Building jar " jar-file "..."))
-    (b/jar {:class-dir class-dir
-            :jar-file  jar-file}))
-  opts)
+  (println "\nWriting pom.xml...")
+  (println "deps:" (:deps basis))
+  (b/write-pom {:class-dir class-dir
+                :lib       lib
+                :version   version
+                :scm       (cond-> (or scm {})
+                             tag (assoc :tag tag))
+                :basis     basis
+                :src-dirs  src-dirs})
+  (println "Copying src...")
+  (b/copy-dir {:src-dirs   src-dirs
+               :target-dir class-dir})
+  (println (str "Building jar " jar-file "..."))
+  (b/jar {:class-dir class-dir
+          :jar-file  jar-file}))
 
 (defn javac
   [{:keys [src-dirs class-dir basis target] :as opts}]
-  (let [target (or target default-target)
-        src-dirs (or src-dirs ["java"])
-        class-dir (or class-dir (default-class-dir target))
-        basis (or basis default-basis)]
-    (println "Compiling java...")
-    (b/javac {:src-dirs src-dirs
-              :class-dir class-dir
-	      :basis basis
-	      :javac-opts ["-source" "8" "-target" "8"]}))
-  opts)
-
-(defn uber
-  "Build the library Uber JAR file. Requires: lib, version"
-  [{:keys [target class-dir lib version basis scm src-dirs tag uber-file] :as opts}]
-  (assert (and lib version) "lib and version are required for uber")
-  (let [target    (or target default-target)
-        class-dir (or class-dir (default-class-dir target))
-        basis     (or basis default-basis)
-        src-dirs  (or src-dirs ["src"])
-        tag       (or tag (str "v" version))
-        uber-file  (or uber-file (default-uber-file target lib version))]
-    (println "Copying src...")
-    (b/copy-dir {:src-dirs   src-dirs
-                 :target-dir class-dir})
-    (println (str "Building uberjar " uber-file "..."))
-    (b/uber {:class-dir class-dir
-             :uber-file uber-file
-             :basis basis}))
-  opts)
-
-(defn compile-clj
-  [{:keys [target class-dir basis src-dirs] :as opts}]
-  (let [target (or target (default-target))
-        class-dir (or class-dir (default-class-dir target))
-        basis (or basis (default-basis))
-        src-dirs (or src-dirs ["src"])])
-  (println "Compiling clj...")
-  (b/compile-clj {:basis basis
-                  :src-dirs src-dirs
-                  :class-dir class-dir})
-  opts)
+  (println "Compiling java...")
+  (b/javac {:src-dirs src-dirs
+            :class-dir class-dir
+	    :basis basis
+	    :javac-opts ["-source" "8" "-target" "8"]}))
 
 (defn uberjar
-  [{:keys [lib version basis target class-dir uber-file] :as opts}]
+  [{:keys [lib version basis target src-dirs class-dir uber-file] :as opts}]
   (assert (and lib version) "lib and version are required for install")
-  (let [basis (or basis default-basis)
-        target (or target default-target)
-        class-dir (or class-dir (default-class-dir target))
-        uber-file  (or uber-file (default-uber-file target lib version))]
-    (-> opts
-        (assoc :lib lib
-               :version version
-               :basis basis
-               :target target
-               :class-dir class-dir
-               :uber-file uber-file)
-        (compile-clj)
-        (uber))
-    opts))
+  (println "Copying src...")
+  (b/copy-dir {:src-dirs   src-dirs
+               :target-dir class-dir})
+  (println "Compiling clj...")
+  (b/compile-clj opts)
+  (println (str "Building uberjar " uber-file "..."))
+  (b/uber opts))
 
 (defn install
   "Install jar file to local maven repository ~/.m2, Depend on existing built jar file."
   [{:keys [lib version basis target class-dir jar-file] :as opts}]
   (assert (and lib version) "lib and version are required for install")
-  (let [basis (or basis default-basis)
-        target (or target default-target)
-        class-dir (or class-dir (default-class-dir target))
-        jar-file  (or jar-file (default-jar-file target lib version))]
-    (printf "Install jar file(%s) to local maven repository(~/.m2) with version(%s \"%s\")%n" jar-file lib version)
-    (-> opts
-        (assoc :lib lib
-               :version version
-               :basis basis
-               :target target
-               :class-dir class-dir
-               :jar-file jar-file)
-        (bb/clean)
-        (bb/jar)
-        (b/install))
-    opts))
+  (printf "Install jar file(%s) to local maven repository(~/.m2) with version(%s \"%s\")%n" jar-file lib version)
+  (bb/clean opts)
+  (bb/jar opts)
+  (b/install))
 
 (defn clojars
   "Deploy the JAR to Clojars. Requires: lib, version. Depend on existing built jar file"
   [{:keys [lib version target class-dir jar-file] :as opts}]
   (assert (and lib version) "lib and version are required for deploy")
-  (let [target    (or target default-target)
-        class-dir (or class-dir (default-class-dir target))
-        jar-file  (or jar-file (default-jar-file target lib version))]
-    (dd/deploy (merge {:installer :remote :artifact jar-file
-                       :pom-file (b/pom-path {:lib lib :class-dir class-dir})}
-                      opts)))
-  opts)
+  (dd/deploy (merge {:installer :remote :artifact jar-file
+                     :pom-file (b/pom-path {:lib lib :class-dir class-dir})}
+                    opts)))
 
 (defn git-tag-version
   "Shells out to git and tag current commit using version:
@@ -163,22 +125,20 @@
   Options:
     :dir - dir to invoke this command from, by default current directory
     :path - path to count commits for relative to dir"
-  [{:keys [dir path version] :or {dir "."} :as opts}]
-  (let [tag (str "v" version)]
-    (printf "git tag version(%s) with tag(%s)." version tag)
-    (-> {:command-args (cond-> ["git" "tag" tag]
-                         path (conj "--" path))
-         :dir (.getPath (b/resolve-path dir))
-         :out :capture}
-        b/process
-        :out))
-  opts)
+  [{:keys [dir path version tag] :or {dir "."} :as opts}]
+  (assert (and version tag) "version and tag is required")
+  (printf "git tag version(%s) with tag(%s)." version tag)
+  (-> {:command-args (cond-> ["git" "tag" tag]
+                       path (conj "--" path))
+       :dir (.getPath (b/resolve-path dir))
+       :out :capture}
+      b/process
+      :out))
 
 (defn tag
-  [{:keys [dir path version] :as opts}]
-  (-> opts
-      (no-local-change)
-      (git-tag-version)))
+  [opts]
+  (no-local-change opts)
+  (git-tag-version opts))
 
 (defn update-lein-version
   [{:keys [dir file lib version] :or {dir "." file "README.md"} :as opts}]
@@ -189,8 +149,7 @@
          :dir (.getPath (b/resolve-path dir))
          :out :capture}
         b/process
-        :out)
-    opts))
+        :out)))
 
 (defn update-deps-version
   [{:keys [dir file lib version] :or {dir "." file "README.md"} :as opts}]
@@ -201,16 +160,14 @@
          :dir (.getPath (b/resolve-path dir))
          :out :capture}
         b/process
-        :out)
-    opts))
+        :out)))
 
 (defn release
   [opts]
-  (-> opts
-      (no-local-change)
-      (bb/clean)
-      (bb/jar)
-      (clojars)
-      (git-tag-version)
-      (update-lein-version)
-      (update-deps-version)))
+  (no-local-change opts)
+  (bb/clean opts)
+  (bb/jar opts)
+  (clojars opts)
+  (git-tag-version opts)
+  (update-lein-version opts)
+  (update-deps-version opts))
