@@ -41,7 +41,7 @@
    :version (default-version opts)
    :target (default-target opts)
    :basis (default-basis opts)
-   :src-dirs (:src-dirs opts ["src"])
+   :src-dirs (:src-dirs opts (:paths (default-basis opts)))
    :tag (:tag opts (str "v" (default-version opts)))
    :class-dir (default-class-dir opts)
    :jar-file (default-jar-file opts)
